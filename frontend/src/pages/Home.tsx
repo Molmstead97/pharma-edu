@@ -3,7 +3,7 @@ import { Navbar } from "../components/styles/Navbar/Navbar";
 
 const Home: React.FC = () => {
     return (
-        <Navbar />
+        <h1>Home</h1>
     )
 }
 

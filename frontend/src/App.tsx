@@ -1,42 +1,27 @@
-import "./App.css";
-
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+} from "react-router-dom";
 import Nav from "./components/Nav/Nav";
-import NavItem from "./components/Nav/NavItem";
-
 import routes from "./routes";
-import { BrowserRouter, Route, Routes } from "react-router-dom"
 
-import { DoctorProfileScreen } from "./components/DoctorProfileScreen/DoctorProfileScreen";
-import { DoctorSearchScreen } from "./components/DoctorSearchScreen/DoctorSearchScreen";
-import { NewPatientScreen } from "./components/NewPatientScreen/NewPatientScreen";
-import { NewPrescriptionScreen } from "./components/NewPrescriptionScreen/NewPrescriptionScreen";
-import { NewRxPageScreen } from "./components/NewRxPageScreen/NewRxPageScreen";
-import { PatientProfileScreen } from "./components/PatientProfileScreen/PatientProfileScreen";
-import { PatientSearchScreen } from "./components/PatientSearchScreen/PatientSearchScreen";
-import { RxItemScreen } from "./components/RxItemScreen/RxItemScreen";
-
-function App() {
+const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Nav>
-        {routes.map((item, index) => (
-          <NavItem key={index} routeName={item.name} path={item.path} />
-        ))}
-      </Nav>
+    <Router basename="/pharma-edu/">
+      <Nav />
       <Routes>
-        {routes.map((item, index) => (
-          <Route key={index} path={item.path} element={item.component} />
+        {routes.map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={<route.component />}
+          />
         ))}
-        <Route path="/doctor-search" element={<DoctorSearchScreen />} />
-        <Route path="/doctor-profile" element={<DoctorProfileScreen />} />
-        <Route path="/doctor-profile" element={<DoctorProfileScreen />} />
-        <Route path="/doctor-profile" element={<DoctorProfileScreen />} />
-        <Route path="/doctor-profile" element={<DoctorProfileScreen />} />
-        <Route path="/doctor-profile" element={<DoctorProfileScreen />} />
-        <Route path="/doctor-profile" element={<DoctorProfileScreen />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
-}
+};
 
 export default App;

@@ -2,12 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 interface NavItemProps {
-    routeName: string,
-    path: string
+  name: string;
+  path: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ routeName, path }) => {
-  return <Link to={path}>{routeName}</Link>;
+const NavItem: React.FC<NavItemProps> = ({ path, name }) => {
+  return (
+    <li>
+      <Link to={path}>{name}</Link>
+    </li>
+  );
 };
 
 export default NavItem;

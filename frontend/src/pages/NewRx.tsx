@@ -4,7 +4,7 @@ import { NewRxPage } from "../components/styles/NewRxPage/NewRxPage";
 const NewRx: React.FC = () => {
     return (
         <main>
-            <NewRxPage />
+            <h1>New Rx</h1>
         </main>
     )
 }
