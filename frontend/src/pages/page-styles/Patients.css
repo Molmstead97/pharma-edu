@@ -1,0 +1,110 @@
+.patient-profile {
+  max-width: 1000px;
+  margin: 2rem auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 30px;
+  font-family: 'Arial', sans-serif;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 28px;
+  color: #1a3b5d;
+  margin: 0;
+}
+
+.logo img {
+  height: 50px;
+}
+
+
+.info-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.info-section .form-box {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.general-info,
+.insurance-info {
+  margin-bottom: 25px;
+}
+
+h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #1a3b5d;
+  border-bottom: 2px solid #1a3b5d;
+  padding-bottom: 8px;
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e0;
+  margin-top: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.actions button {
+  padding: 12px 20px;
+  border-radius: 6px;
+  background-color: #1a3b5d;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  font-weight: bold;
+}
+
+.actions button:hover {
+  background-color: #2c5282;
+  transform: translateY(-1px);
+}
+
+.actions button:active {
+  transform: translateY(1px);
+}
+
+

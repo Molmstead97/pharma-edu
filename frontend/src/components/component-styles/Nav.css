@@ -1,0 +1,58 @@
+/* Nav.css */
+nav {
+    background-color: #1a3b5d;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Increased shadow for more depth */
+  }
+  
+  nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between; /* Space items evenly across the screen */
+  }
+  
+  nav li {
+    margin: 0 1rem;
+    flex: 1; /* Allow items to take up equal space */
+    text-align: center; /* Center text inside each item */
+  }
+  
+  .nav-item {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.2rem; /* Increased font size */
+    padding: 0.75rem 1.5rem; /* Adjusted padding for larger click area */
+    border-radius: 8px; /* Slightly rounded corners */
+    background-color: #142b47; /* Darker container around each item */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Added shadow to each item */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+  }
+  
+  .nav-item:hover {
+    background-color: #1f4b73;
+    transform: translateY(-2px); /* Slightly lift the item on hover */
+  }
+  
+  /* Responsive design */
+  @media (max-width: 600px) {
+    nav ul {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    nav li {
+      margin: 0.5rem 0;
+      width: 100%; /* Ensure full width on mobile */
+    }
+  
+    .nav-item {
+      font-size: 1rem; /* Adjust font size for mobile */
+    }
+  }
+  
+  
+  
