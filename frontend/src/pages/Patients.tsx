@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../page-styles/Patients.css";
+import "./page-styles/Patients.css";
 import Modal from "../components/Modal";
 import axios from "axios";
 
@@ -46,46 +46,35 @@ const PatientProfile: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPatientInfo({
-      ...patientInfo,
+    setPatientInfo((prevInfo) => ({
+      ...prevInfo,
       [name]: value,
-    });
+    }));
   };
 
   const handleSave = () => {
-    // Logic to save the patient info
     console.log("Patient Info Saved", patientInfo);
   };
 
-  const handleSearch = async (searchParams: { firstName?: string; lastName?: string; dateOfBirth?: string; }) => {
+  const handleSearch = async (searchParams: Partial<PatientInfo>) => {
     try {
-      const response = await axios.post("/api/patients/search", searchParams);
-      const data = response.data;
-  
-      setPatientInfo(prevInfo => ({
+      const { data } = await axios.post("http://127.0.0.1:8000/patients", searchParams);
+      setPatientInfo((prevInfo) => ({
         ...prevInfo,
-        ...data, // Spread the response data directly into the patientInfo state
+        ...data,
       }));
     } catch (error) {
       console.error("Error fetching patient data:", error);
     }
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div className="patient-profile">
       <div className="header">
         <h1>Patient Profile</h1>
-        <div className="logo">
-          <img src="path-to-logo" alt="Logo" />
-        </div>
       </div>
       <div className="info-section">
         <div className="form-box general-info">
@@ -95,7 +84,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="firstName"
-              value={patientInfo?.firstName || ''}
+              value={patientInfo?.firstName || ""}
               onChange={handleChange}
             />
           </label>
@@ -104,16 +93,16 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="lastName"
-              value={patientInfo?.lastName || ''}
+              value={patientInfo?.lastName || ""}
               onChange={handleChange}
             />
           </label>
           <label>
-            Contact #:
+            Phone #:
             <input
               type="text"
               name="contactNumber"
-              value={patientInfo?.contactNumber || ''}
+              value={patientInfo?.contactNumber || ""}
               onChange={handleChange}
             />
           </label>
@@ -122,7 +111,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="contactEmail"
-              value={patientInfo?.contactEmail || ''}
+              value={patientInfo?.contactEmail || ""}
               onChange={handleChange}
             />
           </label>
@@ -131,7 +120,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="date"
               name="dob"
-              value={patientInfo?.dob || ''}
+              value={patientInfo?.dob || ""}
               onChange={handleChange}
             />
           </label>
@@ -144,7 +133,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="addressNumber"
-              value={patientInfo?.addressNumber || ''}
+              value={patientInfo?.addressNumber || ""}
               onChange={handleChange}
             />
           </label>
@@ -153,7 +142,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="street"
-              value={patientInfo?.street || ''}
+              value={patientInfo?.street || ""}
               onChange={handleChange}
             />
           </label>
@@ -162,7 +151,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="city"
-              value={patientInfo?.city || ''}
+              value={patientInfo?.city || ""}
               onChange={handleChange}
             />
           </label>
@@ -171,7 +160,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="state"
-              value={patientInfo?.state || ''}
+              value={patientInfo?.state || ""}
               onChange={handleChange}
             />
           </label>
@@ -180,7 +169,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="zip"
-              value={patientInfo?.zip || ''}
+              value={patientInfo?.zip || ""}
               onChange={handleChange}
             />
           </label>
@@ -189,7 +178,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="allergies"
-              value={patientInfo?.allergies || ''}
+              value={patientInfo?.allergies || ""}
               onChange={handleChange}
             />
           </label>
@@ -201,7 +190,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="idNumber"
-              value={patientInfo?.idNumber || ''}
+              value={patientInfo?.idNumber || ""}
               onChange={handleChange}
             />
           </label>
@@ -210,7 +199,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="groupNumber"
-              value={patientInfo?.groupNumber || ''}
+              value={patientInfo?.groupNumber || ""}
               onChange={handleChange}
             />
           </label>
@@ -219,7 +208,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="bin"
-              value={patientInfo?.bin || ''}
+              value={patientInfo?.bin || ""}
               onChange={handleChange}
             />
           </label>
@@ -228,7 +217,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="pcn"
-              value={patientInfo?.pcn || ''}
+              value={patientInfo?.pcn || ""}
               onChange={handleChange}
             />
           </label>
@@ -237,7 +226,7 @@ const PatientProfile: React.FC = () => {
             <input
               type="text"
               name="personCode"
-              value={patientInfo?.personCode || ''}
+              value={patientInfo?.personCode || ""}
               onChange={handleChange}
             />
           </label>
