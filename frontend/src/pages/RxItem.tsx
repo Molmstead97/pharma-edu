@@ -7,9 +7,8 @@ interface RxData {
   [key: string]: string;
 }
 
-const Prescription: React.FC = () => {
+const RxItem: React.FC = () => {
   const [rxInfo, setRxInfo] = useState<RxData>({
-    rxNumber: "",
     patientId: "",
     prescriberId: "",
     prescribedDate: "",
@@ -32,38 +31,8 @@ const Prescription: React.FC = () => {
     }));
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!rxInfo.rx_number) {
-      console.error("Prescription ID is missing. Cannot save data.");
-      return;
-    }
-      
-    try {
-      const response = await axios.patch(
-        `http://127.0.0.1:8000/prescriptions/${rxInfo.rx_number}`,
-        {
-          patient_id: rxInfo.patientId,
-          prescriber_id: rxInfo.prescriberId,
-          prescribed_date: rxInfo.prescribedDate,
-          rx_item_id: rxInfo.rxItemId,
-          directions: rxInfo.directions,
-          quantity: rxInfo.quantity,
-          quantity_dispensed: rxInfo.quantityDispensed,
-          refills: rxInfo.refills,
-          status: rxInfo.status,
-          tech_initals: rxInfo.techInitials,
-        }
-      );
-      console.log("Prescription information saved successfully:", response.data);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        console.error("Error saving prescription information:", error.response.data);
-      } else {
-        console.error("Unexpected error:", error);
-      }
-    }
+  const handleSave = () => {
+    console.log("Patient Info Saved", rxInfo);
   };
 
   const handleSearch = async (searchParams: {
@@ -72,15 +41,15 @@ const Prescription: React.FC = () => {
     dateOfBirth?: string;
   }) => {
     try {
-     
+      // Step 1: Search for patients
       const searchResponse = await axios.get("http://127.0.0.1:8000/patients", {
         params: searchParams,
       });
       const searchData = searchResponse.data;
 
-      
+      // Step 2: If matching patients are found, fetch detailed information for the first one
       if (searchData && searchData.length > 0) {
-        const rxNumber = searchData[0].rx_number; 
+        const patientId = searchData[0].id; // Assuming the searchData includes an "id" field
         const detailResponse = await axios.get(
           `http://127.0.0.1:8000/patients/${patientId}`
         );
@@ -88,7 +57,6 @@ const Prescription: React.FC = () => {
 
         // Transform data to match frontend field names
         setRxInfo({
-          id: rxNumber,
           patientId: prescriptionDetails.patient_id,
           prescriberId: prescriptionDetails.prescriber_id,
           prescribedDate: prescriptionDetails.prescribed_date,
@@ -101,10 +69,10 @@ const Prescription: React.FC = () => {
           techInitials: prescriptionDetails.tech_initals,
         });
       } else {
-        console.log("No matching prescriptions found.");
+        console.log("No matching patients found.");
       }
     } catch (error) {
-      console.error("Error fetching prescription data:", error);
+      console.error("Error fetching patient data:", error);
     }
   };
 
@@ -165,7 +133,7 @@ const Prescription: React.FC = () => {
         </div>
       </div>
       <div className="actions">
-        <button onClick={handleSave}>Save</button>
+        <button onClick={handleSave}>Save Info</button>
         <button onClick={openModal}>Search</button>
       </div>
 
@@ -179,4 +147,4 @@ const Prescription: React.FC = () => {
   );
 };
 
-export default Prescription;
+export default RxItem;

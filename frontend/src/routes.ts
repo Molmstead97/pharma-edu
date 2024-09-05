@@ -1,7 +1,8 @@
 import Home from "./pages/Home";
 import NewRx from "./pages/NewRx";
+import RxItem from "./pages/RxItem";
 import Patients from "./pages/Patients";
-import Doctors from "./pages/Doctors";
+import Prescribers from "./pages/Prescribers";
 
 interface PharmacyRoutes {
   name: string;
@@ -21,14 +22,19 @@ const routes: PharmacyRoutes[] = [
     component: NewRx,
   },
   {
+    name: "Rx Item",
+    path: "/rx-item",
+    component: RxItem,
+  },
+  {
     name: "Patients",
     path: "/patients",
     component: Patients,
   },
   {
-    name: "Doctors",
-    path: "/doctors",
-    component: Doctors,
+    name: "Prescribers",
+    path: "/prescribers",
+    component: Prescribers,
   },
 ];
 
