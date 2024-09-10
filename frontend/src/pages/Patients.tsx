@@ -1,12 +1,33 @@
-import React, { useState } from "react";
-import "./page-styles/Patients.css";
+import React, { useState, useCallback } from "react";
+import "./page-styles/main.css";
 import Modal from "../components/Modal";
+import InputField from "../components/InputField";
 import axios from "axios";
 
-// Simplified PatientInfo type
 interface PatientInfo {
   [key: string]: string;
 }
+
+interface Prescription {
+  rxNumber: number;
+  prescriberId: number;
+  prescriberFirstName: string;
+  prescriberLastName: string;
+  prescriberType: string;
+  prescribedDate: string;
+  rxItemName: string;
+  rxItemStrength: string;
+  quantity: number;
+  refills: number;
+  directions: string;
+}
+
+type FieldConfig = {
+  name: string;
+  label: string;
+  type?: "text" | "date" | "textarea" | "select";
+  options?: { value: string; label: string }[];
+};
 
 const PatientProfile: React.FC = () => {
   const [patientInfo, setPatientInfo] = useState<PatientInfo>({
@@ -27,16 +48,61 @@ const PatientProfile: React.FC = () => {
     groupNumber: "",
   });
 
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [selectedPrescription, setSelectedPrescription] =
+    useState<Prescription | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isPatientFound, setIsPatientFound] = useState<boolean>(false); // Tracks if a patient was found
+  const [isPatientFound, setIsPatientFound] = useState<boolean>(false);
 
   /* HANDLE CHANGE */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPatientInfo((prevInfo) => ({
-      ...prevInfo,
-      [name]: value,
-    }));
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >
+    ) => {
+      const { name, value } = e.target;
+      setPatientInfo((prevInfo) => ({
+        ...prevInfo,
+        [name]: value,
+      }));
+    },
+    []
+  );
+
+  /* HANDLE PRESCRIPTION SELECTION */
+  const handlePrescriptionChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    // Check if the event target is a select element
+    if (e.target instanceof HTMLSelectElement) {
+      const selectedRxNumber = e.target.value;
+      const selectedPrescription = prescriptions.find(
+        (prescription) => prescription.rxNumber.toString() === selectedRxNumber
+      );
+
+      setSelectedPrescription(selectedPrescription || null);
+
+      // Populate prescription fields when a valid prescription is selected
+      if (selectedPrescription) {
+        setPatientInfo((prevInfo) => ({
+          ...prevInfo,
+          rxNumber: selectedPrescription.rxNumber.toString(),
+          prescriberId: selectedPrescription.prescriberId.toString(),
+          rxItemName: selectedPrescription.rxItemName,
+          rxItemStrength: selectedPrescription.rxItemStrength,
+          prescriberFirstName: selectedPrescription.prescriberFirstName,
+          prescriberLastName: selectedPrescription.prescriberLastName,
+          prescriberType: selectedPrescription.prescriberType,
+          prescribedDate: selectedPrescription.prescribedDate,
+          quantity: selectedPrescription.quantity.toString(),
+          refills: selectedPrescription.refills.toString(),
+          directions: selectedPrescription.directions,
+        }));
+      }
+    }
   };
 
   /* HANDLE SAVE (POST) */
@@ -62,8 +128,16 @@ const PatientProfile: React.FC = () => {
         insurance_group_number: patientInfo.groupNumber,
       });
       console.log("New patient saved successfully:", response.data);
+      alert(`Patient information saved successfully. Patient ID: ${patientInfo.id}`);
     } catch (error) {
       console.error("Error saving new patient information:", error);
+    }
+  };
+
+  const handleSaveWithConfirmation = (e: React.FormEvent) => {
+    const confirmSave = window.confirm("Save information for this patient?");
+    if (confirmSave) {
+      handleSave(e); // Calls the existing save function
     }
   };
 
@@ -93,161 +167,274 @@ const PatientProfile: React.FC = () => {
         }
       );
       console.log("Patient information updated successfully:", response.data);
+      alert(`Patient information updated successfully. Patient ID: ${patientInfo.id}`);
     } catch (error) {
       console.error("Error updating patient information:", error);
     }
   };
 
+  const handleUpdateWithConfirmation = (e: React.FormEvent) => {
+    const confirmSave = window.confirm("Update information for this patient?");
+    if (confirmSave) {
+      handleUpdate(e); // Calls the existing save function
+    }
+  };
+
   /* HANDLE SEARCH */
-  const handleSearch = async (searchParams: {
-    firstName?: string;
-    lastName?: string;
-    dateOfBirth?: string;
-  }) => {
+  const handleSearch = async (
+    searchParams: { id?: number },
+    entityType: string
+  ) => {
     try {
-      const searchResponse = await axios.get("http://127.0.0.1:8000/patients", {
-        params: searchParams,
-      });
-      const searchData = searchResponse.data;
-
-      if (searchData && searchData.length > 0) {
-        const patientId = searchData[0].id; // Assuming the searchData includes an "id" field
-        const detailResponse = await axios.get(
-          `http://127.0.0.1:8000/patients/${patientId}`
+      if (searchParams.id) {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/${entityType}s/${searchParams.id}`
         );
-        const patientDetails = detailResponse.data;
+        const data = response.data;
 
-        setPatientInfo({
-          firstName: patientDetails.first_name,
-          lastName: patientDetails.last_name,
-          dob: patientDetails.date_of_birth,
-          phoneNumber: patientDetails.phone_number,
-          allergies: patientDetails.allergies,
-          street: patientDetails.street,
-          city: patientDetails.city,
-          state: patientDetails.state,
-          zip: patientDetails.zipcode,
-          insuranceName: patientDetails.insurance_name,
-          bin: patientDetails.insurance_rx_bin,
-          pcn: patientDetails.insurance_rx_pcn,
-          personCode: patientDetails.insurance_person_code,
-          idNumber: patientDetails.insurance_member_id,
-          groupNumber: patientDetails.insurance_group_number,
-          id: patientId, // Store the patient ID
-        });
+        if (data) {
+          setPatientInfo({
+            firstName: data.first_name,
+            lastName: data.last_name,
+            dob: data.date_of_birth,
+            phoneNumber: data.phone_number,
+            allergies: data.allergies,
+            street: data.street,
+            city: data.city,
+            state: data.state,
+            zip: data.zipcode,
+            insuranceName: data.insurance_name,
+            bin: data.insurance_rx_bin,
+            pcn: data.insurance_rx_pcn,
+            personCode: data.insurance_person_code,
+            idNumber: data.insurance_member_id,
+            groupNumber: data.insurance_group_number,
+            id: data.id,
+          });
 
-        setIsPatientFound(true); // Set to true as we found a patient
+          // Set prescriptions
+          setPrescriptions(
+            data.prescriptions.map((prescription: any) => ({
+              rxNumber: prescription.rx_number,
+              prescriberId: prescription.prescriber_id,
+              prescriberFirstName: prescription.prescriber_first_name,
+              prescriberLastName: prescription.prescriber_last_name,
+              prescriberType: prescription.prescriber_type,
+              prescribedDate: prescription.prescribed_date,
+              rxItemName: prescription.rx_item_name,
+              rxItemStrength: prescription.rx_item_strength,
+              quantity: prescription.quantity,
+              refills: prescription.refills,
+              directions: prescription.directions,
+            }))
+          );
+
+          setIsPatientFound(true);
+        } else {
+          console.log("No matching patient found.");
+          alert("No matching patient found.");
+          setIsPatientFound(false);
+        }
       } else {
-        console.log("No matching patients found.");
-        setIsPatientFound(false); // No patient found, switch to "save" mode
+        console.log("No ID provided for search.");
+        alert("No ID provided for search.");
+        setIsPatientFound(false);
       }
-    } catch (error) {
-      console.error("Error fetching patient data:", error);
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        console.error("Patient not found:", error.response.data);
+        alert("Patient not found.");
+        setIsPatientFound(false);
+      } else {
+        console.error("Error fetching patient data:", error);
+        alert("An error occurred while searching for the patient.");
+      }
+    }
+  };
+  
+  const handleClear = () => {
+    const confirmClear = window.confirm(
+      "Are you sure you want to clear the patient information?"
+    );
+  
+    if (confirmClear) {
+      // Reset the patientInfo state to empty values
+      setPatientInfo({
+        firstName: "",
+        lastName: "",
+        dob: "",
+        phoneNumber: "",
+        allergies: "",
+        street: "",
+        city: "",
+        state: "",
+        zip: "",
+        insuranceName: "",
+        bin: "",
+        pcn: "",
+        personCode: "",
+        idNumber: "",
+        groupNumber: "",
+      });
+  
+      // Clear the selected prescription and prescriptions list
+      setSelectedPrescription(null);
+      setPrescriptions([]);
+      setIsPatientFound(false);
     }
   };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  /* COMPONENT FOR ALL INPUT FIELDS */
-  const InputField: React.FC<{
-    name: string;
-    value: string;
-    label: string;
-  }> = ({ name, value, label }) => (
-    <label>
-      {label}:
-      <input
-        type={name === "dob" ? "date" : "text"}
-        name={name}
-        value={value || ""}
-        onChange={handleChange}
-      />
-    </label>
-  );
+  const generalFields: FieldConfig[] = [
+    { name: "firstName", label: "First Name" },
+    { name: "lastName", label: "Last Name" },
+    { name: "dob", label: "Date of Birth", type: "date" },
+    { name: "phoneNumber", label: "Phone Number" },
+    { name: "allergies", label: "Allergies", type: "textarea" },
+  ];
+
+  const prescriptionFields: FieldConfig[] = [
+    { name: "rxNumber", label: "Rx Number" },
+    { name: "prescriberId", label: "Prescriber ID" },
+    { name: "prescriberFirstName", label: "Prescriber First Name" },
+    { name: "prescriberLastName", label: "Prescriber Last Name" },
+    { name: "prescriberType", label: "Prescriber Type" },
+    { name: "prescribedDate", label: "Prescribed Date" },
+    { name: "rxItemName", label: "Rx Item Name" },
+    { name: "rxItemStrength", label: "Rx Item Strength" },
+    { name: "quantity", label: "Quantity" },
+    { name: "refills", label: "Refills" },
+    { name: "directions", label: "Directions", type: "textarea" },
+  ];
+
+  const insuranceFields: FieldConfig[] = [
+    { name: "insuranceName", label: "Insurance Name" },
+    { name: "bin", label: "BIN" },
+    { name: "pcn", label: "PCN" },
+    { name: "personCode", label: "Person Code" },
+    { name: "idNumber", label: "ID Number" },
+    { name: "groupNumber", label: "Group Number" },
+  ];
+
+  const addressFields: FieldConfig[] = [
+    { name: "street", label: "Street" },
+    { name: "city", label: "City" },
+    { name: "state", label: "State" },
+    { name: "zip", label: "ZIP" },
+  ];
 
   return (
-    <div className="patient-profile">
+    <div className="container">
       <div className="header">
         <h1>Patient Profile</h1>
       </div>
-      <div className="info-section">
-        <div className="form-box general-info">
-          <h2>General Information</h2>
-          {[
-            { name: "firstName", label: "First Name" },
-            { name: "lastName", label: "Last Name" },
-            { name: "dob", label: "Date of Birth" },
-            { name: "phoneNumber", label: "Phone Number" },
-            { name: "allergies", label: "Allergies" },
-          ].map(({ name, label }) => (
+
+      <form onSubmit={isPatientFound ? handleUpdate : handleSave} className="form-grid">
+        <div className="form-box">
+          <h2>Patient Info</h2>
+          {generalFields.map(({ name, label, type }) => (
             <InputField
               key={name}
               name={name}
-              value={patientInfo[name]}
+              value={patientInfo[name] || ""}
               label={label}
+              onChange={handleChange}
+              type={type || "text"}
+              readOnly={false}
             />
           ))}
-          {/* Address Information */}
-          <div>
-            <h2>Address Information</h2>
-            {[
-              { name: "street", label: "Street" },
-              { name: "city", label: "City" },
-              { name: "state", label: "State" },
-              { name: "zip", label: "Zip" },
-            ].map(({ name, label }) => (
+        </div>
+
+        <div className="form-box">
+          <h2>Prescriptions</h2>
+          <InputField
+            label="Select Prescription"
+            name="selectedPrescription"
+            type="select"
+            options={prescriptions.map((prescription) => ({
+              value: prescription.rxNumber.toString(),
+              label: prescription.rxItemName,
+            }))}
+            value={selectedPrescription?.rxNumber.toString() || ""}
+            onChange={handlePrescriptionChange}
+          />
+          {selectedPrescription &&
+            prescriptionFields.map((field) => (
               <InputField
-                key={name}
-                name={name}
-                value={patientInfo[name]}
-                label={label}
+                key={field.name}
+                name={field.name}
+                value={patientInfo[field.name] || ""}
+                label={field.label}
+                type={field.type || "text"}
+                onChange={handleChange}
+                readOnly={
+                  field.name === "rxNumber" || field.name === "prescriberId"
+                }
               />
             ))}
-          </div>
         </div>
-        <div className="form-box insurance-info">
-          <h2>Insurance Info</h2>
-          {[
-            { name: "insuranceName", label: "Name" },
-            { name: "idNumber", label: "Member ID #" },
-            { name: "groupNumber", label: "Group #" },
-            { name: "bin", label: "BIN" },
-            { name: "pcn", label: "PCN" },
-            { name: "personCode", label: "Person Code" },
-          ].map(({ name, label }) => (
+
+        <div className="form-box">
+          <h2>Address Information</h2>
+          {addressFields.map(({ name, label }) => (
             <InputField
               key={name}
               name={name}
               value={patientInfo[name]}
               label={label}
+              onChange={handleChange}
+              readOnly={false}
             />
           ))}
         </div>
-      </div>
-      <div className="actions">
-        {/* Dynamically render the button based on whether a patient was found */}
-        {isPatientFound ? (
-          <button onClick={handleUpdate}>Update Patient</button>
-        ) : (
-          <button onClick={handleSave}>Save</button>
-        )}
-        <button type="button" onClick={openModal}>
-          Search
-        </button>
-      </div>
+
+        <div className="form-box">
+          <h2>Insurance Information</h2>
+          {insuranceFields.map(({ name, label }) => (
+            <InputField
+              key={name}
+              name={name}
+              value={patientInfo[name]}
+              label={label}
+              onChange={handleChange}
+              readOnly={false}
+            />
+          ))}
+        </div>
+
+        <div className="actions">
+        <div className="action-box">
+            <button type="button" onClick={openModal} className="search">
+              Search
+            </button>
+          </div>
+          
+          <div className="action-box">
+            {isPatientFound ? (
+              <button type="submit" className="save" onClick={handleUpdateWithConfirmation}>Update Patient</button>
+            ) : (
+              <button type="submit" className="save" onClick={handleSaveWithConfirmation}>Save</button>
+            )}
+          </div>
+        
+          <div className="action-box">
+            <button type="button" className="clear" onClick={handleClear}>
+              Clear
+            </button>
+          </div>
+        </div>
+      </form>
 
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSearch={handleSearch}
-        fields={["firstName", "lastName", "dateOfBirth"]}
+        entityType="patient"
       />
     </div>
   );
 };
 
 export default PatientProfile;
-
-
-

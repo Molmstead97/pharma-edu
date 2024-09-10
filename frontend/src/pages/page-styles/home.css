@@ -1,0 +1,65 @@
+body {
+    background: linear-gradient(to bottom right, #1e2a3a, #243B55);
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .logo-container {
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .logo {
+    max-width: 400px;
+    height: auto;
+  }
+  
+  .welcome-message {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .welcome-title {
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: #ffffff;
+  }
+  
+  .welcome-text {
+    font-size: 1.3em;
+    line-height: 1.8;
+    margin-bottom: 30px;
+    color: #d1d1d1;
+  }
+  
+  .cta-button {
+    display: inline-block;
+    background-color: #4a90e2;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #357abd;
+    transform: scale(1.05);
+  }
+  
