@@ -3,6 +3,7 @@ import "./page-styles/RxItem.css";
 import Modal from "../components/Modal";
 import InputField from "../components/InputField";
 import axios from "axios";
+//import { handleChange, handleSaveOrUpdate, handleSearch, handleClear, handleDelete } from "../handle-functions";
 
 interface RxData {
   [key: string]: string;
@@ -32,10 +33,11 @@ const RxItem: React.FC = () => {
   const handleChange = useCallback(
     (
       e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
       >
     ) => {
       const { name, value } = e.target;
+      console.log(`Field: ${name}, Value: ${value}`); // Log the field name and value
       setRxInfo((prevInfo) => ({
         ...prevInfo,
         [name]: value,
@@ -48,7 +50,7 @@ const RxItem: React.FC = () => {
     e.preventDefault();
     try {
       const response = await axios.patch(
-        `http://127.0.0.1:8000/prescribers/${rxInfo.id}`,
+        `http://127.0.0.1:8000/rx-items/${rxInfo.id}`,
         {
           name: rxInfo.name,
           strength: rxInfo.strength,
@@ -60,17 +62,15 @@ const RxItem: React.FC = () => {
         }
       );
       console.log("Rx Item information updated successfully:", response.data);
-      alert(`Item information updated successfully. Item ID: ${rxInfo.id}`)
+      alert(`Item information updated successfully. Item ID: ${rxInfo.id}`);
     } catch (error) {
       console.error("Error updating Rx Item information:", error);
-      alert("Error updating item information")
+      alert("Error updating item information");
     }
   };
 
   const handleUpdateWithConfirmation = (e: React.FormEvent) => {
-    const confirmSave = window.confirm(
-      "Update information for this item?"
-    );
+    const confirmSave = window.confirm("Update information for this item?");
     if (confirmSave) {
       handleUpdate(e); // Calls the existing save function
     }
@@ -79,7 +79,7 @@ const RxItem: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/prescriptions`, {
+      const response = await axios.post(`http://127.0.0.1:8000/rx-items`, {
         name: rxInfo.name,
         strength: rxInfo.strength,
         ndc: rxInfo.ndc,
@@ -89,11 +89,13 @@ const RxItem: React.FC = () => {
         dea_schedule: rxInfo.deaSchedule,
       });
       console.log("Rx Item information saved successfully:", response.data);
-      alert(`Item information saved successfully. Item ID: ${rxInfo.id}`)
+      alert(
+        `Item information saved successfully. Item ID: ${rxInfo.rx_item_id}`
+      );
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         console.error("Error saving Rx Item information:", error.response.data);
-        alert("Error saving item information")
+        alert("Error saving item information");
       } else {
         console.error("Unexpected error:", error);
       }
@@ -101,15 +103,16 @@ const RxItem: React.FC = () => {
   };
 
   const handleSaveWithConfirmation = (e: React.FormEvent) => {
-    const confirmSave = window.confirm(
-      "Save information for this item?"
-    );
+    const confirmSave = window.confirm("Save information for this item?");
     if (confirmSave) {
       handleSave(e); // Calls the existing save function
     }
   };
 
-  const handleSearch = async (searchParams: { id?: number }, entityType: string) => {
+  const handleSearch = async (
+    searchParams: { id?: number },
+    entityType: string
+  ) => {
     try {
       if (searchParams.id) {
         const response = await axios.get(
@@ -118,7 +121,6 @@ const RxItem: React.FC = () => {
         const data = response.data;
 
         if (data) {
-
           setRxInfo({
             id: data.id,
             name: data.name,
@@ -130,51 +132,78 @@ const RxItem: React.FC = () => {
             deaSchedule: data.dea_schedule,
           });
 
-        setIsItemFound(true);
+          setIsItemFound(true);
+        } else {
+          // If no data is found, show alert and switch to "save" mode
+          console.log("No matching item found.");
+          alert("No matching item found.");
+          setIsItemFound(false); // No entity found
+        }
       } else {
-        // If no data is found, show alert and switch to "save" mode
-        console.log("No matching item found.");
-        alert("No matching item found.");
-        setIsItemFound(false); // No entity found
+        // If no ID is provided, handle the case as needed
+        console.log("No ID provided for search.");
+        alert("No ID provided for search.");
+        setIsItemFound(false); // No ID provided
       }
-    } else {
-      // If no ID is provided, handle the case as needed
-      console.log("No ID provided for search.");
-      alert("No ID provided for search.");
-      setIsItemFound(false); // No ID provided
+    } catch (error: any) {
+      // Handle specific error cases, such as 404 or 500
+      if (error.response && error.response.status === 404) {
+        console.error("Rx item not found:", error.response.data);
+        alert("Rx item not found.");
+        setIsItemFound(false); // No entity found
+      } else {
+        // General error handling
+        console.error("Error fetching item data:", error);
+        alert("An error occurred while searching for the item.");
+      }
     }
-  } catch (error: any) {
-    // Handle specific error cases, such as 404 or 500
-    if (error.response && error.response.status === 404) {
-      console.error("Rx item not found:", error.response.data);
-      alert("Rx item not found.");
-      setIsItemFound(false); // No entity found
-    } else {
-      // General error handling
-      console.error("Error fetching item data:", error);
-      alert("An error occurred while searching for the item.");
-    }
-  }
-};
-      
-const handleClear = () => {
-  const confirmClear = window.confirm(
-    "Are you sure you want to clear the item information?"
-  );
+  };
 
-  if (confirmClear) {
-    setRxInfo({
-      name: "",
-      strength: "",
-      ndc: "",
-      expiration: "",
-      lotNumber: "",
-      dosageForm: "",
-      deaSchedule: "",
-    });
-    setIsItemFound(false);
-  }
-};
+  const handleClear = () => {
+    const confirmClear = window.confirm(
+      "Are you sure you want to clear the item information?"
+    );
+
+    if (confirmClear) {
+      setRxInfo({
+        name: "",
+        strength: "",
+        ndc: "",
+        expiration: "",
+        lotNumber: "",
+        dosageForm: "",
+        deaSchedule: "",
+      });
+      setIsItemFound(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this item?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/rx-items/${rxInfo.id}`);
+        alert("Item deleted successfully.");
+        setRxInfo({
+          name: "",
+          strength: "",
+          ndc: "",
+          expiration: "",
+          lotNumber: "",
+          dosageForm: "",
+          deaSchedule: "",
+        });
+      } catch (error) {
+        console.error("Error deleting item:", error);
+        alert("Error deleting item.");
+      }
+
+      setIsItemFound(false);
+    }
+  };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -222,7 +251,7 @@ const handleClear = () => {
   return (
     <div className="container">
       <div className="header">
-        <h1>Prescription Profile</h1>
+        <h1>Rx Item Profile</h1>
       </div>
       <div className="info-section">{renderInputFields}</div>
       <div className="actions">
@@ -255,6 +284,11 @@ const handleClear = () => {
         <div className="action-box">
           <button type="button" className="clear" onClick={handleClear}>
             Clear
+          </button>
+        </div>
+        <div className="action-box">
+          <button type="button" className="delete" onClick={handleDelete}>
+            Delete
           </button>
         </div>
       </div>

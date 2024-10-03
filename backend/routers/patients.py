@@ -35,6 +35,7 @@ async def get_patient(patient_id: int, session: Session = Depends(get_db)) -> Pa
             prescriber_last_name=prescription.prescriber.last_name,
             prescriber_type=prescription.prescriber.prescriber_type,
             prescribed_date=prescription.prescribed_date,
+            prescription_status=prescription.status,
             rx_item_name=prescription.rx_item.name,
             rx_item_strength=prescription.rx_item.strength,
             quantity=prescription.quantity,
@@ -77,5 +78,7 @@ async def delete_patient(patient_id: int, session: Session = Depends(get_db)):
     patient: Patient | None = session.get(Patient, patient_id)
     if patient is None:
         raise PatientNotFound(id=patient_id)
+    for prescription in patient.prescriptions:
+        session.delete(prescription)
     session.delete(patient)
     session.commit()

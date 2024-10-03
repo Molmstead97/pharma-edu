@@ -25,6 +25,8 @@ const InputField: React.FC<InputFieldProps> = React.memo(
     readOnly = false,
   }) => {
     const renderInput = () => {
+      console.log("Current value for", name, ":", value); // Log the value to debug
+      
       switch (type) {
         case "textarea":
           return (
@@ -33,11 +35,12 @@ const InputField: React.FC<InputFieldProps> = React.memo(
               value={value}
               onChange={onChange}
               readOnly={readOnly}
+              aria-label={label}
             />
           );
         case "select":
           return (
-            <select name={name} value={value} onChange={onChange}>
+            <select name={name} value={value || ""} onChange={onChange} aria-label={label}>
               <option value="">Select an option</option>{" "}
               {/* Ensure there's a default option */}
               {options.map((option) => (
@@ -47,6 +50,7 @@ const InputField: React.FC<InputFieldProps> = React.memo(
               ))}
             </select>
           );
+
         default:
           return (
             <input
@@ -55,6 +59,7 @@ const InputField: React.FC<InputFieldProps> = React.memo(
               value={value}
               onChange={onChange}
               readOnly={readOnly}
+              aria-label={label}
             />
           );
       }

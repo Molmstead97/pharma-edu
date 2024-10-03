@@ -59,6 +59,7 @@ class PatientRxHistoryItem(BaseModel):
     prescriber_last_name: str
     prescriber_type: PrescriberType
     prescribed_date: date
+    prescription_status: PrescriptionStatus
     rx_item_name: str
     rx_item_strength: str
     quantity: int

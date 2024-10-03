@@ -3,6 +3,7 @@ import "./page-styles/Prescribers.css";
 import Modal from "../components/Modal";
 import InputField from "../components/InputField";
 import axios from "axios";
+//import { handleChange, handleSaveOrUpdate, handleSearch, handleClear, handleDelete } from "../handle-functions";
 
 interface PrescriberInfo {
   [key: string]: string;
@@ -64,7 +65,9 @@ const PrescriberProfile: React.FC = () => {
         "Prescriber information updated successfully:",
         response.data
       );
-      alert(`Prescriber information updated successfully. Prescriber ID: ${prescriberInfo.id}`);
+      alert(
+        `Prescriber information updated successfully. Prescriber ID: ${prescriberInfo.id}`
+      );
     } catch (error) {
       console.error("Error updating prescriber information:", error);
     }
@@ -75,7 +78,7 @@ const PrescriberProfile: React.FC = () => {
     const confirmUpdate = window.confirm(
       "Are you sure you want to update the prescriber information?"
     );
-  
+
     if (confirmUpdate) {
       handleUpdate(e); // Call the actual update logic here
     }
@@ -83,11 +86,6 @@ const PrescriberProfile: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!prescriberInfo.id) {
-      console.error("Prescriber ID is missing. Cannot save data.");
-      return;
-    }
 
     try {
       const response = await axios.post(`http://127.0.0.1:8000/prescribers`, {
@@ -103,7 +101,9 @@ const PrescriberProfile: React.FC = () => {
         npi: prescriberInfo.npi,
       });
       console.log("Prescriber information saved successfully:", response.data);
-      alert(`Prescriber information saved successfully. Prescriber ID: ${prescriberInfo.id}`);
+      alert(
+        `Prescriber information saved successfully. Prescriber ID: ${prescriberInfo.id}`
+      );
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         console.error(
@@ -201,6 +201,38 @@ const PrescriberProfile: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this prescriber?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await axios.delete(
+          `http://127.0.0.1:8000/prescribers/${prescriberInfo.id}`
+        );
+        alert("Prescriber deleted successfully.");
+        setPrescriberInfo({
+          firstName: "",
+          lastName: "",
+          prescriberType: "",
+          street: "",
+          city: "",
+          state: "",
+          zip: "",
+          contactNumber: "",
+          dea: "",
+          npi: "",
+        });
+      } catch (error) {
+        console.error("Error deleting prescriber:", error);
+        alert("Error deleting prescriber.");
+      }
+
+      setIsPrescriberFound(false);
+    }
+  };
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
@@ -281,6 +313,11 @@ const PrescriberProfile: React.FC = () => {
         <div className="action-box">
           <button type="button" className="clear" onClick={handleClear}>
             Clear
+          </button>
+        </div>
+        <div className="action-box">
+          <button type="button" className="delete" onClick={handleDelete}>
+            Delete
           </button>
         </div>
       </div>

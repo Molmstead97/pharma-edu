@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+#set -ex
+#
+#export $(grep -v '^#' ../.env | xargs)
+DATABASE_URL=postgresql://postgres:postgres@db:5432/pharma-db
+
+# Clear records
+psql $DATABASE_URL -f database-seed/delete_records.sql
+
+# Insert
+psql $DATABASE_URL -f database-seed/insert_patients.sql
+psql $DATABASE_URL -f database-seed/insert_prescribers.sql
+psql $DATABASE_URL -f database-seed/insert_rxitems.sql
+psql $DATABASE_URL -f database-seed/insert_prescriptions.sql
+

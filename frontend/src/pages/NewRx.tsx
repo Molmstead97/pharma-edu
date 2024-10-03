@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import "./page-styles/Prescribers.css";
+import "./page-styles/main.css";
 import Modal from "../components/Modal";
 import InputField from "../components/InputField";
 import axios from "axios";
@@ -29,6 +29,7 @@ const NewRx: React.FC = () => {
   });
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   const [isPrescriptionFound, setIsPrescriptionFound] =
     useState<boolean>(false);
 
@@ -41,34 +42,61 @@ const NewRx: React.FC = () => {
       const { name, value } = e.target;
       setPrescriptionInfo((prevInfo) => ({
         ...prevInfo,
-        [name]:
-          name === "patientId" || // Fixed typo
-          name === "prescriberId" ||
-          name === "rxItemId" ||
-          name === "quantity" ||
-          name === "quantityDispensed" ||
-          name === "refills"
-            ? parseFloat(value) || 0
-            : value,
+        [name]: value,
       }));
     },
     []
   );
 
+  /* HANDLE UPDATE (PATCH) */
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.patch(
+        `http://127.0.0.1:8000/prescriptions/${prescriptionInfo.id}`,
+        {
+          patient_id: prescriptionInfo.patientId,
+          prescriber_id: prescriptionInfo.prescriberId,
+          prescribed_date: prescriptionInfo.prescribedDate,
+          rx_item_id: prescriptionInfo.rxItemId,
+          directions: prescriptionInfo.directions,
+          quantity: prescriptionInfo.quantity,
+          quantity_dispensed: prescriptionInfo.quantityDispensed,
+          refills: prescriptionInfo.refills,
+          status: prescriptionInfo.status,
+          tech_initials: prescriptionInfo.techInitials,
+        }
+      );
+      console.log(
+        "Prescription information updated successfully:",
+        response.data
+      );
+      alert(
+        `Prescription information updated successfully. Prescription ID: ${prescriptionInfo.id}`
+      );
+    } catch (error) {
+      console.error("Error updating prescription information:", error);
+    }
+  };
+
+  const handleUpdateWithConfirmation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const confirmUpdate = window.confirm(
+      "Are you sure you want to update the prescription information?"
+    );
+
+    if (confirmUpdate) {
+      handleUpdate(e); // Call the actual update logic here
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check if any required fields are empty
     const { patientId, prescriberId, rxItemId } = prescriptionInfo;
-    if (!patientId || !prescriberId || !rxItemId) {
-      alert(
-        "Please ensure all fields are filled out."
-      );
-      return;
-    }
 
     try {
-      // Perform checks to verify IDs
       const [patientCheck, prescriberCheck, rxItemCheck] = await Promise.all([
         axios.get(`http://127.0.0.1:8000/patients/${patientId}`),
         axios.get(`http://127.0.0.1:8000/prescribers/${prescriberId}`),
@@ -76,13 +104,10 @@ const NewRx: React.FC = () => {
       ]);
 
       if (!patientCheck.data || !prescriberCheck.data || !rxItemCheck.data) {
-        alert(
-          "One or more of the IDs (Patient, Prescriber, Rx Item) do not exist in the database."
-        );
+        alert("One or more of the IDs do not exist in the database.");
         return;
       }
 
-      // Proceed with saving the prescription
       const response = await axios.post(`http://127.0.0.1:8000/prescriptions`, {
         patient_id: prescriptionInfo.patientId,
         prescriber_id: prescriptionInfo.prescriberId,
@@ -96,8 +121,17 @@ const NewRx: React.FC = () => {
         tech_initials: prescriptionInfo.techInitials,
       });
 
+      // Update the state with the newly created prescription ID (rx_number)
+      setPrescriptionInfo((prevInfo) => ({
+        ...prevInfo,
+        id: response.data.rx_number, // Assuming `rx_number` is returned as the unique identifier
+      }));
+      console.log(
+        "Prescription information saved successfully:",
+        response.data
+      );
       alert(
-        `Prescription information saved successfully. Rx Number: ${response.data.rx_number}`
+        `Prescription information saved successfully. Prescription ID: ${response.data.id}`
       );
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -108,7 +142,6 @@ const NewRx: React.FC = () => {
         alert("Error saving prescription information");
       } else {
         console.error("Unexpected error:", error);
-        alert("An unexpected error occurred.");
       }
     }
   };
@@ -119,60 +152,6 @@ const NewRx: React.FC = () => {
     );
     if (confirmSave) {
       handleSave(e); // Calls the existing save function
-    }
-  };
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    // Check if any required fields are empty
-    const { patientId, prescriberId, rxItemId } = prescriptionInfo;
-    if (!patientId || !prescriberId || !rxItemId) {
-      alert("Please ensure all required fields (Patient ID, Prescriber ID, Rx Item ID) are filled out.");
-      return;
-    }
-  
-    try {
-      // Perform checks to verify IDs
-      const [patientCheck, prescriberCheck, rxItemCheck] = await Promise.all([
-        axios.get(`http://127.0.0.1:8000/patients/${patientId}`),
-        axios.get(`http://127.0.0.1:8000/prescribers/${prescriberId}`),
-        axios.get(`http://127.0.0.1:8000/rx-items/${rxItemId}`)
-      ]);
-  
-      if (!patientCheck.data || !prescriberCheck.data || !rxItemCheck.data) {
-        alert("One or more of the IDs (Patient, Prescriber, Rx Item) do not exist in the database.");
-        return;
-      }
-  
-      // Proceed with updating the prescription
-      const response = await axios.patch(`http://127.0.0.1:8000/prescriptions/${prescriptionInfo.id}`, {
-        patient_id: prescriptionInfo.patientId,
-        prescriber_id: prescriptionInfo.prescriberId,
-        prescribed_date: prescriptionInfo.prescribedDate,
-        rx_item_id: prescriptionInfo.rxItemId,
-        directions: prescriptionInfo.directions,
-        quantity: prescriptionInfo.quantity,
-        quantity_dispensed: prescriptionInfo.quantityDispensed,
-        refills: prescriptionInfo.refills,
-        status: prescriptionInfo.status,
-        tech_initials: prescriptionInfo.techInitials,
-      });
-      
-      alert(`Prescription information updated successfully. Rx Number: ${response.data.rx_number}`);
-    } catch (error) {
-      console.error("Error updating prescription information:", error);
-      alert("Error updating prescription information");
-    }
-  };
-  
-
-  const handleUpdateWithConfirmation = (e: React.FormEvent) => {
-    const confirmSave = window.confirm(
-      "Update information for this prescription?"
-    );
-    if (confirmSave) {
-      handleUpdate(e); // Calls the existing save function
     }
   };
 
@@ -188,6 +167,7 @@ const NewRx: React.FC = () => {
         const data = response.data;
 
         if (data) {
+          // Transform data to match frontend field names
           setPrescriptionInfo({
             id: data.rx_number,
             patientId: data.patient_id,
@@ -247,6 +227,39 @@ const NewRx: React.FC = () => {
         status: "",
         techInitials: "",
       });
+
+      setIsPrescriptionFound(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this prescription?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await axios.delete(
+          `http://127.0.0.1:8000/prescriptions/${prescriptionInfo.id}`
+        );
+        alert("Prescription deleted successfully.");
+        setPrescriptionInfo({
+          patientId: "",
+          prescriberId: "",
+          prescribedDate: "",
+          rxItemId: "",
+          directions: "",
+          quantity: "",
+          quantityDispensed: "",
+          refills: "",
+          status: "",
+          techInitials: "",
+        });
+      } catch (error) {
+        console.error("Error deleting prescription:", error);
+        alert("Error deleting prescription.");
+      }
+
       setIsPrescriptionFound(false);
     }
   };
@@ -340,6 +353,12 @@ const NewRx: React.FC = () => {
         <div className="action-box">
           <button type="button" className="clear" onClick={handleClear}>
             Clear
+          </button>
+        </div>
+
+        <div className="action-box">
+          <button type="button" className="delete" onClick={handleDelete}>
+            Delete
           </button>
         </div>
       </div>

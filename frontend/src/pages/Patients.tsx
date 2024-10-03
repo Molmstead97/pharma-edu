@@ -3,6 +3,7 @@ import "./page-styles/main.css";
 import Modal from "../components/Modal";
 import InputField from "../components/InputField";
 import axios from "axios";
+//import { handleChange, handleSaveOrUpdate, handleSearch, handleClear, handleDelete } from "../handle-functions";
 
 interface PatientInfo {
   [key: string]: string;
@@ -128,7 +129,9 @@ const PatientProfile: React.FC = () => {
         insurance_group_number: patientInfo.groupNumber,
       });
       console.log("New patient saved successfully:", response.data);
-      alert(`Patient information saved successfully. Patient ID: ${patientInfo.id}`);
+      alert(
+        `Patient information saved successfully. Patient ID: ${patientInfo.id}`
+      );
     } catch (error) {
       console.error("Error saving new patient information:", error);
     }
@@ -167,7 +170,9 @@ const PatientProfile: React.FC = () => {
         }
       );
       console.log("Patient information updated successfully:", response.data);
-      alert(`Patient information updated successfully. Patient ID: ${patientInfo.id}`);
+      alert(
+        `Patient information updated successfully. Patient ID: ${patientInfo.id}`
+      );
     } catch (error) {
       console.error("Error updating patient information:", error);
     }
@@ -251,12 +256,12 @@ const PatientProfile: React.FC = () => {
       }
     }
   };
-  
+
   const handleClear = () => {
     const confirmClear = window.confirm(
       "Are you sure you want to clear the patient information?"
     );
-  
+
     if (confirmClear) {
       // Reset the patientInfo state to empty values
       setPatientInfo({
@@ -276,8 +281,45 @@ const PatientProfile: React.FC = () => {
         idNumber: "",
         groupNumber: "",
       });
-  
+
       // Clear the selected prescription and prescriptions list
+      setSelectedPrescription(null);
+      setPrescriptions([]);
+      setIsPatientFound(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this patient?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/patients/${patientInfo.id}`);
+        alert("Patient deleted successfully.");
+        setPatientInfo({
+          firstName: "",
+          lastName: "",
+          dob: "",
+          phoneNumber: "",
+          allergies: "",
+          street: "",
+          city: "",
+          state: "",
+          zip: "",
+          insuranceName: "",
+          bin: "",
+          pcn: "",
+          personCode: "",
+          idNumber: "",
+          groupNumber: "",
+        });
+      } catch (error) {
+        console.error("Error deleting patient:", error);
+        alert("Error deleting patient.");
+      }
+
       setSelectedPrescription(null);
       setPrescriptions([]);
       setIsPatientFound(false);
@@ -331,7 +373,10 @@ const PatientProfile: React.FC = () => {
         <h1>Patient Profile</h1>
       </div>
 
-      <form onSubmit={isPatientFound ? handleUpdate : handleSave} className="form-grid">
+      <form
+        onSubmit={isPatientFound ? handleUpdate : handleSave}
+        className="form-grid"
+      >
         <div className="form-box">
           <h2>Patient Info</h2>
           {generalFields.map(({ name, label, type }) => (
@@ -405,23 +450,40 @@ const PatientProfile: React.FC = () => {
         </div>
 
         <div className="actions">
-        <div className="action-box">
+          <div className="action-box">
             <button type="button" onClick={openModal} className="search">
               Search
             </button>
           </div>
-          
+
           <div className="action-box">
             {isPatientFound ? (
-              <button type="submit" className="save" onClick={handleUpdateWithConfirmation}>Update Patient</button>
+              <button
+                type="submit"
+                className="save"
+                onClick={handleUpdateWithConfirmation}
+              >
+                Update Patient
+              </button>
             ) : (
-              <button type="submit" className="save" onClick={handleSaveWithConfirmation}>Save</button>
+              <button
+                type="submit"
+                className="save"
+                onClick={handleSaveWithConfirmation}
+              >
+                Save
+              </button>
             )}
           </div>
-        
+
           <div className="action-box">
             <button type="button" className="clear" onClick={handleClear}>
               Clear
+            </button>
+          </div>
+          <div className="action-box">
+            <button type="button" className="delete" onClick={handleDelete}>
+              Delete
             </button>
           </div>
         </div>

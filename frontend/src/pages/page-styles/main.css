@@ -114,11 +114,11 @@ select:focus {
   transform: translateY(1px);
 }
 
-.actions button.clear {
+.actions button.clear, button.delete {
   background-color: #e53e3e;
 }
 
-.actions button.clear:hover {
+.actions button.clear:hover, button.delete:hover {
   background-color: #c53030;
 }
 
